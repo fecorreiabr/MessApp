@@ -22,4 +22,5 @@
     <string name="pwd_incorrect_register">Senha deve ter 6 a 20 caracteres, conter maiúsculas, minúsculas e um caractere especial</string>
     <string name="email_already_registerd">E-mail já utilizado para registro</string>
     <string name="user_registered_success">Usuário registrado com sucesso</string>
+    <string name="user_or_pwd_incorrect_login">Usuário ou senha incorretos</string>
 </resources>

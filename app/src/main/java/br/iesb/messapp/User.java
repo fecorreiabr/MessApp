@@ -1,5 +1,7 @@
 package br.iesb.messapp;
 
+import java.util.UUID;
+
 import io.realm.RealmObject;
 
 /**
@@ -7,9 +9,18 @@ import io.realm.RealmObject;
  */
 public class User extends RealmObject {
 
+    private String id;
     private String email;
     private String name;
     private String pwd;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getEmail() {
         return email;
@@ -34,4 +45,5 @@ public class User extends RealmObject {
     public void setPwd(String pwd) {
         this.pwd = pwd;
     }
+
 }

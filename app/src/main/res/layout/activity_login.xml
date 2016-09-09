@@ -58,6 +58,7 @@
                 android:src="@drawable/ic_mail_24dp"/>
 
             <EditText
+                android:id="@+id/text_email_login"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/text_background"
@@ -85,6 +86,7 @@
                 android:src="@drawable/ic_lock_24dp"/>
 
             <EditText
+                android:id="@+id/text_pwd_login"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/text_background"

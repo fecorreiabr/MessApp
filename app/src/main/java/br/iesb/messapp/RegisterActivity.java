@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.UUID;
+
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmQuery;
@@ -87,6 +89,7 @@ public class RegisterActivity extends AppCompatActivity {
             if (!isUserAlreadyRegistered(email)){
                 realm.beginTransaction();
                 User user = realm.createObject(User.class);
+                user.setId(UUID.randomUUID().toString());
                 user.setName(name);
                 user.setEmail(email);
                 user.setPwd(pwd);
@@ -94,8 +97,10 @@ public class RegisterActivity extends AppCompatActivity {
 
                 realm.beginTransaction();
                 Contact contact = realm.createObject(Contact.class);
+                contact.setId(UUID.randomUUID().toString());
                 contact.setName(name);
                 contact.setEmail(email);
+                contact.setOwner(user.getId());
                 realm.commitTransaction();
 
                 Toast.makeText(this, getResources().getString(R.string.user_registered_success), Toast.LENGTH_SHORT).show();

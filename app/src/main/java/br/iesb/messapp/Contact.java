@@ -14,9 +14,14 @@ public class Contact extends RealmObject {
     private String phone;
     private String skypeId;
     private String avatarPicture;
+    private String owner;
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getEmail() {
@@ -59,7 +64,12 @@ public class Contact extends RealmObject {
         this.avatarPicture = avatarPicture;
     }
 
-    public Contact() {
-        this.id = UUID.randomUUID().toString();
+    public String getOwner() {
+        return owner;
     }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
 }

@@ -4,6 +4,8 @@ import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
@@ -18,6 +20,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.TextView;
+
+import java.util.List;
+
+import br.iesb.messapp.adapters.ContactsAdapter;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,6 +45,11 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    private String userId;
+    protected static List<Contact> contactList;
+    private Realm realm;
+    private RealmConfiguration realmConfig;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        userId = getIntent().getStringExtra("id");
+        realmConfig = new RealmConfiguration.Builder(this).build();
+        realm = Realm.getInstance(realmConfig);
+        LoadContactList();
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -88,6 +108,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void LoadContactList() {
+        RealmResults<Contact> results = realm.where(Contact.class).equalTo("owner", userId).findAll();
+        contactList = results;
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -97,6 +122,10 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
+
+        private RecyclerView mainRecyclerView;
+        private RecyclerView.Adapter mainAdapter;
+        private RecyclerView.LayoutManager mainLayoutManager;
 
         public PlaceholderFragment() {
         }
@@ -116,7 +145,22 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            int sectionNumber = getArguments().getInt(ARG_SECTION_NUMBER);
+            View rootView;
+
+            if (sectionNumber == 1) {
+                rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+                mainRecyclerView = (RecyclerView) rootView.findViewById(R.id.main_recycler_view);
+                mainRecyclerView.setHasFixedSize(true);
+                mainLayoutManager = new LinearLayoutManager(getActivity());
+                mainRecyclerView.setLayoutManager(mainLayoutManager);
+                mainAdapter = new ContactsAdapter(contactList);
+                mainRecyclerView.setAdapter(mainAdapter);
+            } else {
+                rootView = inflater.inflate(R.layout.fragment_chats, container, false);
+            }
+
             //TextView textView = (TextView) rootView.findViewById(R.id.section_label);
 
             //textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));

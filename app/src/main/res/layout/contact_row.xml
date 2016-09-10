@@ -6,38 +6,38 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/contact_row_padding_top"
         android:layout_marginStart="@dimen/contact_row_horizontal_margin"
-        android:src="@drawable/ic_account_circle_40dp"/>
+        android:layout_marginTop="@dimen/contact_row_padding_top"
+        android:src="@drawable/ic_account_circle_40dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/contact_row_height"
-        android:layout_marginStart="@dimen/contact_row_text_lef_margin"
         android:layout_marginEnd="@dimen/contact_row_horizontal_margin"
-        android:paddingTop="@dimen/contact_row_padding_top"
-        android:orientation="vertical">
+        android:layout_marginStart="@dimen/contact_row_text_lef_margin"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/contact_row_padding_top">
 
         <TextView
+            android:id="@+id/text_name_contact_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/contact_row_primary_text"
             android:textColor="@color/colorPrimaryText"
-            android:text="Nome"/>
+            android:textSize="@dimen/contact_row_primary_text" />
 
         <TextView
+            android:id="@+id/text_email_contact_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/contact_row_secondary_text"
             android:textColor="@color/colorSecondaryText"
-            android:text="Telefone"/>
+            android:textSize="@dimen/contact_row_secondary_text" />
 
         <TextView
+            android:id="@+id/text_phone_contact_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/contact_row_secondary_text"
             android:textColor="@color/colorSecondaryText"
-            android:text="E-mail"/>
+            android:textSize="@dimen/contact_row_secondary_text" />
 
     </LinearLayout>
 

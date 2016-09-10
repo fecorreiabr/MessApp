@@ -1,5 +1,6 @@
 package br.iesb.messapp;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import io.realm.RealmObject;

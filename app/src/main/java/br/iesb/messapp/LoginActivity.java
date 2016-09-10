@@ -39,9 +39,11 @@ public class LoginActivity extends AppCompatActivity {
     public void onClickLogin (View view){
         String email = textEmail.getText().toString();
         String pwd = textPwd.getText().toString();
+        user = Login(email, pwd);
 
-        if (Login(email, pwd)) {
+        if (user != null) {
             Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("id", user.getId());
             startActivity(intent);
         } else {
             Toast.makeText(this, getResources().getString(R.string.user_or_pwd_incorrect_login), Toast.LENGTH_LONG).show();
@@ -49,8 +51,12 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private boolean Login (String email, String pwd){
+    private User Login (String email, String pwd){
         RealmResults<User> results = realm.where(User.class).equalTo("email", email).equalTo("pwd", pwd).findAll();
-        return !results.isEmpty();
+        if (!results.isEmpty()){
+            return results.first();
+        } else {
+            return null;
+        }
     }
 }

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -5,7 +6,7 @@
     tools:context="br.iesb.messapp.MainActivity$PlaceholderFragment">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/main_recycler_view"
+        android:id="@+id/chats_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingTop="@dimen/contact_list_vertical_margin"

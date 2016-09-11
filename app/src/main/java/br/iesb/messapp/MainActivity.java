@@ -46,12 +46,13 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
-    private final static int REQUEST_NEW_CONTACT = 9999;
+    public final static int REQUEST_NEW_CONTACT = 9999;
+    public final static int REQUEST_EDIT_CONTACT = 9998;
     protected final static int CONTACTS_PAGE_POSITION = 0;
     protected final static int CHATS_PAGE_POSITION = 1;
     protected final static int TOTAL_PAGES = 2;
 
-    private String userId;
+    private static String userId;
     protected static List<Contact> contactList;
     private Realm realm;
     private RealmConfiguration realmConfig;
@@ -85,14 +86,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode){
-            case REQUEST_NEW_CONTACT:
-                if (resultCode == RESULT_OK){
-                    LoadContactList();
-                    PlaceholderFragment contactsFragment =
-                            (PlaceholderFragment) mSectionsPagerAdapter.getFragment(CONTACTS_PAGE_POSITION);
-                    contactsFragment.mainAdapter.notifyDataSetChanged();
-                }
+        switch (resultCode) {
+            case RESULT_OK:
+                LoadContactList();
+                PlaceholderFragment contactsFragment =
+                        (PlaceholderFragment) mSectionsPagerAdapter.getFragment(CONTACTS_PAGE_POSITION);
+                contactsFragment.mainAdapter.notifyDataSetChanged();
                 break;
         }
     }
@@ -124,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         contactList = results;
     }
 
-    public void onClickNewContact(View view){
+    public void onClickNewContact(View view) {
         Intent intent = new Intent(this, ContactActivity.class);
         intent.putExtra("userId", userId);
         startActivityForResult(intent, REQUEST_NEW_CONTACT);
@@ -170,9 +169,17 @@ public class MainActivity extends AppCompatActivity {
 
                 mainRecyclerView = (RecyclerView) rootView.findViewById(R.id.main_recycler_view);
                 mainRecyclerView.setHasFixedSize(true);
+                //mainRecyclerView.setLongClickable(true);
                 mainLayoutManager = new LinearLayoutManager(getActivity());
                 mainRecyclerView.setLayoutManager(mainLayoutManager);
-                mainAdapter = new ContactsAdapter(contactList);
+                mainAdapter = new ContactsAdapter(contactList) {
+                    @Override
+                    public void onItemLongClickListener(int position) {
+                        editContact(position);
+                    }
+                };
+
+
                 mainRecyclerView.setAdapter(mainAdapter);
             } else {
                 rootView = inflater.inflate(R.layout.fragment_chats, container, false);
@@ -184,8 +191,14 @@ public class MainActivity extends AppCompatActivity {
             return rootView;
         }
 
-        public static void updateContactsAdapter(){
+        private void editContact(int position) {
+            String contactId = contactList.get(position).getId();
+            Intent intent = new Intent(this.getContext(), ContactActivity.class);
+            intent.putExtra("userId", userId);
+            intent.putExtra("contactId", contactId);
+            startActivityForResult(intent, REQUEST_EDIT_CONTACT);
         }
+
     }
 
     /**
@@ -195,6 +208,7 @@ public class MainActivity extends AppCompatActivity {
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         private Fragment[] fragments = new Fragment[TOTAL_PAGES];
+
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -225,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        public Fragment getFragment(int position){
+        public Fragment getFragment(int position) {
             return fragments[position];
         }
     }

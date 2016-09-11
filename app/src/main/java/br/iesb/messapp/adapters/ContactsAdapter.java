@@ -1,10 +1,13 @@
 package br.iesb.messapp.adapters;
 
+import android.app.Application;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -20,6 +23,11 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
 
     public ContactsAdapter(List<Contact> contactList) {
         this.contactList = contactList;
+
+    }
+
+    public void onItemLongClickListener(int position){
+
     }
 
     @Override
@@ -30,10 +38,18 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, final int position) {
         holder.textName.setText(contactList.get(position).getName());
         holder.textPhone.setText(contactList.get(position).getPhone());
         holder.textEmail.setText(contactList.get(position).getEmail());
+        holder.itemView.setLongClickable(true);
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                onItemLongClickListener(position);
+                return true;
+            }
+        });
     }
 
     @Override
@@ -50,5 +66,6 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
             this.textPhone = (TextView) itemView.findViewById(R.id.text_phone_contact_row);
             this.textEmail = (TextView) itemView.findViewById(R.id.text_email_contact_row);
         }
+
     }
 }

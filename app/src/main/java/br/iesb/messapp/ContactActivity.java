@@ -46,6 +46,8 @@ public class ContactActivity extends AppCompatActivity {
         textPhone = (EditText) findViewById(R.id.text_phone_contact);
         textAddress = (EditText) findViewById(R.id.text_address_contact);
         textSkype = (EditText) findViewById(R.id.text_skype_contact);
+
+        LoadContact();
     }
 
     @Override
@@ -66,6 +68,18 @@ public class ContactActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void LoadContact(){
+        String contactId = getIntent().getStringExtra("contactId");
+        if (contactId != null && !contactId.isEmpty()){
+            contact = realm.where(Contact.class).equalTo("id", contactId).findFirst();
+            textName.setText(contact.getName());
+            textEmail.setText(contact.getEmail());
+            textPhone.setText(contact.getPhone());
+            textAddress.setText(contact.getAddress());
+            textSkype.setText(contact.getSkypeId());
+        }
     }
 
     public void SaveContact(){
@@ -101,6 +115,12 @@ public class ContactActivity extends AppCompatActivity {
                     Toast.makeText(this, getResources().getString(R.string.contact_already_registered), Toast.LENGTH_SHORT).show();
                     return;
                 }
+            } else {
+                if (isContactAlreadyRegistered(email, contact.getId())){
+                    realm.cancelTransaction();
+                    Toast.makeText(this, getResources().getString(R.string.contact_already_registered), Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
             contact.setName(name);
             contact.setEmail(email);
@@ -120,6 +140,11 @@ public class ContactActivity extends AppCompatActivity {
 
     private boolean isContactAlreadyRegistered(String email){
         RealmResults<Contact> results = realm.where(Contact.class).equalTo("email", email).findAll();
+        return !results.isEmpty();
+    }
+
+    private boolean isContactAlreadyRegistered(String email, String id){
+        RealmResults<Contact> results = realm.where(Contact.class).equalTo("email", email).notEqualTo("id", id).findAll();
         return !results.isEmpty();
     }
 }

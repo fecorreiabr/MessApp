@@ -39,7 +39,6 @@
             android:id="@+id/text_name_contact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/name_hint"
             android:inputType="textPersonName"
             android:textSize="@dimen/text_input_font_size" />
 
@@ -56,7 +55,6 @@
             android:id="@+id/text_email_contact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/email_hint"
             android:inputType="textEmailAddress"
             android:textSize="@dimen/text_input_font_size" />
 

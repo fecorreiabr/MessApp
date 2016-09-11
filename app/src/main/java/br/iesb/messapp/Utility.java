@@ -1,6 +1,8 @@
 package br.iesb.messapp;
 
 import android.text.TextUtils;
+import android.util.Patterns;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -13,12 +15,16 @@ public class Utility {
             "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%]).{6,20})";
 
     public static boolean isValidEmail(CharSequence target) {
-        return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+        return !TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches();
     }
 
     public static boolean isValidPassword(CharSequence password){
         Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
+    }
+
+    public static boolean isValidPhone(CharSequence phone){
+        return Patterns.PHONE.matcher(phone).matches();
     }
 }

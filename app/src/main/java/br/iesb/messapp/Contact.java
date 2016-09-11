@@ -3,15 +3,18 @@ package br.iesb.messapp;
 import java.util.UUID;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Felipe on 07/09/2016.
  */
 public class Contact extends RealmObject {
+    @PrimaryKey
     private String id;
     private String email;
     private String name;
     private String phone;
+    private String address;
     private String skypeId;
     private String avatarPicture;
     private String owner;
@@ -46,6 +49,14 @@ public class Contact extends RealmObject {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getSkypeId() {

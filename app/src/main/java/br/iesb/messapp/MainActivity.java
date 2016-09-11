@@ -1,5 +1,6 @@
 package br.iesb.messapp;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -45,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    private final static int REQUEST_NEW_CONTACT = 9999;
+    protected final static int CONTACTS_PAGE_POSITION = 0;
+    protected final static int CHATS_PAGE_POSITION = 1;
+    protected final static int TOTAL_PAGES = 2;
+
     private String userId;
     protected static List<Contact> contactList;
     private Realm realm;
@@ -74,17 +80,22 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode){
+            case REQUEST_NEW_CONTACT:
+                if (resultCode == RESULT_OK){
+                    LoadContactList();
+                    PlaceholderFragment contactsFragment =
+                            (PlaceholderFragment) mSectionsPagerAdapter.getFragment(CONTACTS_PAGE_POSITION);
+                    contactsFragment.mainAdapter.notifyDataSetChanged();
+                }
+                break;
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -111,6 +122,12 @@ public class MainActivity extends AppCompatActivity {
     private void LoadContactList() {
         RealmResults<Contact> results = realm.where(Contact.class).equalTo("owner", userId).findAll();
         contactList = results;
+    }
+
+    public void onClickNewContact(View view){
+        Intent intent = new Intent(this, ContactActivity.class);
+        intent.putExtra("userId", userId);
+        startActivityForResult(intent, REQUEST_NEW_CONTACT);
     }
 
     /**
@@ -166,6 +183,9 @@ public class MainActivity extends AppCompatActivity {
             //textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }
+
+        public static void updateContactsAdapter(){
+        }
     }
 
     /**
@@ -174,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+        private Fragment[] fragments = new Fragment[TOTAL_PAGES];
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -182,24 +203,30 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            fragments[position] = PlaceholderFragment.newInstance(position + 1);
+            return fragments[position];
+            //return PlaceholderFragment.newInstance(position + 1);
         }
 
         @Override
         public int getCount() {
             // Show 2 total pages.
-            return 2;
+            return TOTAL_PAGES;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
-                case 0:
+                case CONTACTS_PAGE_POSITION:
                     return getResources().getString(R.string.contacts_tab);
-                case 1:
+                case CHATS_PAGE_POSITION:
                     return getResources().getString(R.string.chats_tab);
             }
             return null;
+        }
+
+        public Fragment getFragment(int position){
+            return fragments[position];
         }
     }
 }

@@ -3,15 +3,21 @@
     <string name="name">Nome</string>
     <string name="email">E-mail</string>
     <string name="pwd">Senha</string>
+    <string name="phone">Telefone</string>
+    <string name="address">Endereço</string>
+    <string name="skype_name">Skype</string>
     <string name="name_hint">Insira seu nome completo</string>
     <string name="email_hint">Digite seu e-mail de login</string>
     <string name="pwd_hint">Insira uma senha</string>
+    <string name="phone_hint">Telefone</string>
+
     <string name="login">Entrar</string>
     <string name="forgot_pwd">Esqueceu a senha?</string>
     <string name="register">Criar conta</string>
     <string name="fb_login">Entrar com o Facebook</string>
     <string name="title_activity_register">Criar conta</string>
     <string name="save_register">Salvar</string>
+    <string name="save_contact">Salvar</string>
     <string name="title_activity_main">MessApp</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
@@ -22,5 +28,9 @@
     <string name="pwd_incorrect_register">Senha deve ter 6 a 20 caracteres, conter maiúsculas, minúsculas e um caractere especial</string>
     <string name="email_already_registerd">E-mail já utilizado para registro</string>
     <string name="user_registered_success">Usuário registrado com sucesso</string>
+    <string name="contact_saved_success">Contato salvo com sucesso</string>
     <string name="user_or_pwd_incorrect_login">Usuário ou senha incorretos</string>
+    <string name="phone_incorrect_contact">Telefone inválido</string>
+    <string name="contact_already_registered">Já existe um contato com este e-mail</string>
+    <string name="title_activity_contact">Contato</string>
 </resources>

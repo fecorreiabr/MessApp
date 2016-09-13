@@ -14,13 +14,30 @@
     tools:context="br.iesb.messapp.RegisterActivity"
     tools:showIn="@layout/activity_register">
 
-    <ImageView
-        android:layout_width="@dimen/picture_size_register"
-        android:layout_height="@dimen/picture_size_register"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/circle"
-        android:scaleType="center"
-        android:src="@drawable/ic_add_a_photo_24dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/img_user_register"
+            android:layout_width="@dimen/picture_size_register"
+            android:layout_height="@dimen/picture_size_register"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/circle"
+            android:scaleType="center"
+            android:src="@drawable/ic_add_a_photo_24dp"
+            android:clickable="true"
+            android:onClick="onClickImageUser"/>
+
+        <ImageView
+            android:layout_width="@dimen/picture_size_register"
+            android:layout_height="@dimen/picture_size_register"
+            android:layout_centerHorizontal="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/avatar_frame"/>
+
+    </RelativeLayout>
 
     <TextView
         android:layout_width="wrap_content"

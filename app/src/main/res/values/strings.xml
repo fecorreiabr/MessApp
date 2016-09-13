@@ -33,4 +33,15 @@
     <string name="phone_incorrect_contact">Telefone inválido</string>
     <string name="contact_already_registered">Já existe um contato com este e-mail</string>
     <string name="title_activity_contact">Contato</string>
+    <string name="title_dialog_add_photo">Adicionar foto</string>
+    <string name="title_permission_necessary">Permissão necessária</string>
+    <string name="msg_permission_external_storage">É necessária permissão de acesso ao armazenamento externo</string>
+    <string name="msg_permission_camera">É necessária permissão de acesso à câmera</string>
+    <string name="image_directory">/messapp</string>
+
+    <string-array name="photo_options">
+        <item>Tirar foto</item>
+        <item>Escolher da galeria</item>
+        <item>Cancelar</item>
+    </string-array>
 </resources>

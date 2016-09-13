@@ -1,8 +1,13 @@
 package br.iesb.messapp;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -10,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.UUID;
@@ -25,6 +31,9 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText textName;
     private EditText textEmail;
     private EditText textPwd;
+    private ImageView imageUser;
+    private Drawable drawableCam;
+    private String userId;
 
     private Realm realm;
     private RealmConfiguration realmConfig;
@@ -44,6 +53,18 @@ public class RegisterActivity extends AppCompatActivity {
         textName = (EditText)findViewById(R.id.text_name_register);
         textEmail = (EditText)findViewById(R.id.text_email_register);
         textPwd = (EditText)findViewById(R.id.text_pwd_register);
+        imageUser = (ImageView)findViewById(R.id.img_user_register);
+        drawableCam = imageUser.getDrawable();
+
+        String userId = "";
+        if (savedInstanceState != null) {
+            userId = savedInstanceState.getString("userId");
+        }
+        if (userId == "") {
+            this.userId = UUID.randomUUID().toString();
+        } else {
+            this.userId = userId;
+        }
 
     }
 
@@ -65,6 +86,25 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onClickImageUser (View view){
+        PictureManager pictureManager = new PictureManager();
+        pictureManager.loadPicture(getResources().getString(R.string.image_directory), userId, this, R.id.img_user_register);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (imageUser.getDrawable() != drawableCam){
+            imageUser.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        }
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString("userId", userId);
     }
 
     private void RegisterUser(){
@@ -89,7 +129,7 @@ public class RegisterActivity extends AppCompatActivity {
             if (!isUserAlreadyRegistered(email)){
                 realm.beginTransaction();
                 User user = realm.createObject(User.class);
-                user.setId(UUID.randomUUID().toString());
+                user.setId(this.userId);
                 user.setName(name);
                 user.setEmail(email);
                 user.setPwd(pwd);
@@ -97,13 +137,14 @@ public class RegisterActivity extends AppCompatActivity {
 
                 realm.beginTransaction();
                 Contact contact = realm.createObject(Contact.class);
-                contact.setId(UUID.randomUUID().toString());
+                contact.setId(this.userId);
                 contact.setName(name);
                 contact.setEmail(email);
                 contact.setOwner(user.getId());
                 realm.commitTransaction();
 
                 Toast.makeText(this, getResources().getString(R.string.user_registered_success), Toast.LENGTH_SHORT).show();
+                this.userId = null;
                 finish();
                 return;
             }
@@ -120,5 +161,8 @@ public class RegisterActivity extends AppCompatActivity {
         RealmResults<User> results =  realm.where(User.class).equalTo("email", email).findAll();
         return !results.isEmpty();
     }
+
+
+
 
 }

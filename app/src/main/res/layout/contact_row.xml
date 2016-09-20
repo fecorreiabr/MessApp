@@ -10,14 +10,14 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/contact_row_horizontal_margin"
+        android:layout_marginStart="@dimen/row_horizontal_margin"
         android:layout_marginTop="@dimen/contact_row_padding_top"
         android:src="@drawable/ic_account_circle_40dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/contact_row_height"
-        android:layout_marginEnd="@dimen/contact_row_horizontal_margin"
+        android:layout_marginEnd="@dimen/row_horizontal_margin"
         android:layout_marginStart="@dimen/contact_row_text_lef_margin"
         android:orientation="vertical"
         android:paddingTop="@dimen/contact_row_padding_top">
@@ -27,21 +27,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/colorPrimaryText"
-            android:textSize="@dimen/contact_row_primary_text" />
+            android:textSize="@dimen/row_primary_text" />
 
         <TextView
             android:id="@+id/text_email_contact_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/colorSecondaryText"
-            android:textSize="@dimen/contact_row_secondary_text" />
+            android:textSize="@dimen/row_secondary_text" />
 
         <TextView
             android:id="@+id/text_phone_contact_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/colorSecondaryText"
-            android:textSize="@dimen/contact_row_secondary_text" />
+            android:textSize="@dimen/row_secondary_text" />
 
     </LinearLayout>
 

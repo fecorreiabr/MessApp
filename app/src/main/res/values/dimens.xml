@@ -18,8 +18,10 @@
     <dimen name="contact_row_height">88dp</dimen>
     <dimen name="contact_list_vertical_margin">8dp</dimen>
     <dimen name="contact_row_text_lef_margin">72dp</dimen>
-    <dimen name="contact_row_primary_text">16sp</dimen>
-    <dimen name="contact_row_secondary_text">14sp</dimen>
+    <dimen name="row_primary_text">16sp</dimen>
+    <dimen name="row_secondary_text">14sp</dimen>
     <dimen name="contact_row_padding_top">16dp</dimen>
-    <dimen name="contact_row_horizontal_margin">16dp</dimen>
+    <dimen name="row_horizontal_margin">16dp</dimen>
+    <dimen name="two_line_height_item">72dp</dimen>
+    <dimen name="two_line_text_vertical_padding">20dp</dimen>
 </resources>

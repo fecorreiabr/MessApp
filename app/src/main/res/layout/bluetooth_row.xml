@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/two_line_height_item"
+    android:paddingStart="@dimen/row_horizontal_margin"
+    android:paddingEnd="@dimen/row_horizontal_margin">
+
+    <TextView
+        android:id="@+id/text_device_name_bt_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/two_line_text_vertical_padding"
+        android:textSize="@dimen/row_primary_text"
+        android:textColor="@color/colorPrimaryText"
+        android:text="Name"
+        />
+
+    <TextView
+        android:id="@+id/text_device_mac_bt_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_device_name_bt_row"
+        android:textSize="@dimen/row_secondary_text"
+        android:textColor="@color/colorSecondaryText"
+        android:text="Mac"/>
+
+</RelativeLayout>

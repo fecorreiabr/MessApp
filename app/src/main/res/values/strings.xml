@@ -38,10 +38,14 @@
     <string name="msg_permission_external_storage">É necessária permissão de acesso ao armazenamento externo</string>
     <string name="msg_permission_camera">É necessária permissão de acesso à câmera</string>
     <string name="image_directory">/messapp</string>
+    <string name="progress_bt_title">Bluetooth</string>
+    <string name="progress_bt_desc">Procurando dispositivos…</string>
+    <string name="action_bluetooth">Dispositivos bluetooth</string>
 
     <string-array name="photo_options">
         <item>Tirar foto</item>
         <item>Escolher da galeria</item>
         <item>Cancelar</item>
     </string-array>
+    <string name="title_activity_bluetooth">Dispositivos</string>
 </resources>

@@ -21,6 +21,10 @@ public class BlueToothListAdapter extends RecyclerView.Adapter<BlueToothListAdap
         this.deviceList = deviceList;
     }
 
+    public void onClickListener(int position){
+
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.bluetooth_row, null);
@@ -29,9 +33,15 @@ public class BlueToothListAdapter extends RecyclerView.Adapter<BlueToothListAdap
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, final int position) {
         holder.textMac.setText(deviceList.get(position).getMac());
         holder.textName.setText(deviceList.get(position).getName());
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickListener(position);
+            }
+        });
     }
 
     @Override

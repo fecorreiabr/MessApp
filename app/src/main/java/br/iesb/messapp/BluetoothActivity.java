@@ -20,9 +20,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import br.iesb.messapp.adapters.BlueToothListAdapter;
 import br.iesb.messapp.model.Device;
@@ -32,6 +34,9 @@ import io.realm.RealmConfiguration;
 public class BluetoothActivity extends AppCompatActivity {
 
     private static final int REQUEST_PERMISSIONS = 8000;
+    private static final UUID BLUETOOTH_UUID = UUID.fromString("0001101-0000-1000-8000-00805F9B34FB");
+    private static final String BLUETOOTH_NAME = "messapp";
+
     private ProgressDialog progress;
     private BlueToothListAdapter blueToothListAdapter;
     private Realm realm;
@@ -87,7 +92,13 @@ public class BluetoothActivity extends AppCompatActivity {
         btRecyclerView.setHasFixedSize(true);
         btLayoutManager = new LinearLayoutManager(this);
         btRecyclerView.setLayoutManager(btLayoutManager);
-        btListAdapter = new BlueToothListAdapter(deviceList);
+        btListAdapter = new BlueToothListAdapter(deviceList){
+            @Override
+            public void onClickListener(int position) {
+
+            }
+        };
+
         btRecyclerView.setAdapter(btListAdapter);
 
         createReceiver();
@@ -151,6 +162,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     boolean permissionsGranted = true;
                     for (int grantResult : grantResults) {
                         permissionsGranted = permissionsGranted & (grantResult == PackageManager.PERMISSION_GRANTED);
+                        //break;
                     }
                     if (permissionsGranted){
                         continueDoDiscovery();
@@ -182,5 +194,21 @@ public class BluetoothActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSIONS);
         }
     }
+
+    /*private void sendContact(Device device){
+        Thread serverThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serverSocket = bluetoothAdapter
+                            .listenUsingRfcommWithServiceRecord(BLUETOOTH_NAME, BLUETOOTH_UUID);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+    }*/
 
 }

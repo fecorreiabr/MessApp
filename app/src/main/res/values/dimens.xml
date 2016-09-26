@@ -24,4 +24,5 @@
     <dimen name="row_horizontal_margin">16dp</dimen>
     <dimen name="two_line_height_item">72dp</dimen>
     <dimen name="two_line_text_vertical_padding">20dp</dimen>
+    <integer name="map_default_zoom">15</integer>
 </resources>

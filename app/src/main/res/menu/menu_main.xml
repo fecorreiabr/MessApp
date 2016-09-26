@@ -13,4 +13,11 @@
         android:title="@string/action_bluetooth"
         android:icon="@drawable/ic_bluetooth_white_24dp"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_map"
+        android:orderInCategory="98"
+        android:title="@string/title_activity_maps"
+        android:icon="@drawable/ic_place_white_24dp"
+        app:showAsAction="ifRoom" />
 </menu>

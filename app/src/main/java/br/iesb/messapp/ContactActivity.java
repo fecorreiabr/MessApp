@@ -1,5 +1,7 @@
 package br.iesb.messapp;
 
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -10,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.UUID;
@@ -22,7 +25,10 @@ public class ContactActivity extends AppCompatActivity {
 
     private EditText textName, textEmail, textPhone, textAddress, textSkype;
     private Contact contact;
+    private String contactId;
     private String userId;
+    private ImageView imageContact;
+    private Drawable drawableCam;
 
     private Realm realm;
     private RealmConfiguration realmConfig;
@@ -46,8 +52,24 @@ public class ContactActivity extends AppCompatActivity {
         textPhone = (EditText) findViewById(R.id.text_phone_contact);
         textAddress = (EditText) findViewById(R.id.text_address_contact);
         textSkype = (EditText) findViewById(R.id.text_skype_contact);
+        imageContact = (ImageView) findViewById(R.id.image_contact_edit);
+        drawableCam = imageContact.getDrawable();
 
         LoadContact();
+
+        if (contact == null) {
+            String contactId = "";
+            if (savedInstanceState != null) {
+                contactId = savedInstanceState.getString("contactId");
+            }
+            if (contactId == "") {
+                this.contactId = UUID.randomUUID().toString();
+            } else {
+                this.contactId = contactId;
+            }
+        } else {
+            this.contactId = contact.getId();
+        }
     }
 
     @Override
@@ -68,6 +90,24 @@ public class ContactActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onClickImageContact (View view){
+        PictureManager pictureManager = new PictureManager();
+        pictureManager.loadPicture(getResources().getString(R.string.image_directory), contactId, this, R.id.image_contact_edit);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (imageContact.getDrawable() != drawableCam){
+            imageContact.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString("contactId", contactId);
     }
 
     private void LoadContact(){

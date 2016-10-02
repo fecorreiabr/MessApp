@@ -1,10 +1,15 @@
 package br.iesb.messapp;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Patterns;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -17,7 +22,11 @@ import java.util.regex.Pattern;
  */
 public class Utility {
 
+    private static boolean alarmRunning = false;
 
+    public static boolean isAlarmRunning() {
+        return alarmRunning;
+    }
 
     private static final String PASSWORD_PATTERN =
             "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%]).{6,20})";
@@ -43,6 +52,19 @@ public class Utility {
         drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
         drawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    public static void createAlarm(Context context){
+        if (!isAlarmRunning()) {
+            int seconds = 60;
+            Intent alarmIntent = new Intent(context, AlarmReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 1, alarmIntent, 0);
+
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + (seconds * 1000), seconds * 1000, pendingIntent);
+            alarmRunning = true;
+            Toast.makeText(context, "Alarme criado!", Toast.LENGTH_LONG).show();
+        }
     }
 
 }

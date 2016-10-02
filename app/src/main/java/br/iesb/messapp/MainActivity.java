@@ -1,5 +1,8 @@
 package br.iesb.messapp;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -81,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+        Utility.createAlarm(this);
 
     }
 
@@ -138,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("userId", userId);
         startActivityForResult(intent, REQUEST_NEW_CONTACT);
     }
+
 
     /**
      * A placeholder fragment containing a simple view.

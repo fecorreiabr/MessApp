@@ -25,6 +25,8 @@ import android.view.ViewGroup;
 
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.util.List;
 
 import br.iesb.messapp.adapters.ContactsAdapter;
@@ -60,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private Realm realm;
     private RealmConfiguration realmConfig;
 
+    private FirebaseAuth firebaseAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        firebaseAuth = FirebaseAuth.getInstance();
 
         userId = getIntent().getStringExtra("id");
         realmConfig = new RealmConfiguration.Builder(this).build();
@@ -117,6 +123,12 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         switch (id){
+            case R.id.action_logout:
+                Utility.SaveLogout(this);
+                intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
             case R.id.action_settings:
                 return true;
             case R.id.action_bluetooth:

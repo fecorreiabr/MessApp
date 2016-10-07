@@ -35,13 +35,20 @@
     <string name="title_activity_contact">Contato</string>
     <string name="title_dialog_add_photo">Adicionar foto</string>
     <string name="title_permission_necessary">Permissão necessária</string>
-    <string name="msg_permission_external_storage">É necessária permissão de acesso ao armazenamento externo</string>
-    <string name="msg_permission_camera">É necessária permissão de acesso à câmera</string>
+    <string name="msg_permission_external_storage_camera">Para incluir uma foto é necessário conceder os acessos solicitados.</string>
     <string name="image_directory">/messapp</string>
     <string name="progress_bt_title">Bluetooth</string>
     <string name="progress_bt_desc">Procurando dispositivos…</string>
     <string name="action_bluetooth">Dispositivos bluetooth</string>
     <string name="my_last_location">Minha última localização</string>
+    <string name="progress_login_title">Login</string>
+    <string name="progress_login_desc">Efetuando login…</string>
+    <string name="progress_register_title">Registro</string>
+    <string name="progress_register_desc">Efetuando registro…</string>
+    <string name="preference_file_key">br.iesb.messapp.preference_file</string>
+    <string name="preference_uid">uid</string>
+    <string name="preference_user_logged">user_logged</string>
+    <string name="action_logout">Logout</string>
 
     <string-array name="photo_options">
         <item>Tirar foto</item>

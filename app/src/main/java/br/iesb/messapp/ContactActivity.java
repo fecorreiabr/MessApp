@@ -29,6 +29,7 @@ public class ContactActivity extends AppCompatActivity {
     private String userId;
     private ImageView imageContact;
     private Drawable drawableCam;
+    PictureManager pictureManager;
 
     private Realm realm;
     private RealmConfiguration realmConfig;
@@ -93,8 +94,8 @@ public class ContactActivity extends AppCompatActivity {
     }
 
     public void onClickImageContact (View view){
-        PictureManager pictureManager = new PictureManager();
-        pictureManager.loadPicture(getResources().getString(R.string.image_directory), contactId, this, R.id.image_contact_edit);
+        pictureManager = new PictureManager();
+        pictureManager.loadPicture(this, R.id.image_contact_edit);
     }
 
     @Override
@@ -169,6 +170,10 @@ public class ContactActivity extends AppCompatActivity {
             contact.setSkypeId(skype);
             contact.setOwner(userId);
             realm.commitTransaction();
+
+            if (pictureManager != null){
+                pictureManager.savePictureFile(getResources().getString(R.string.image_directory), contactId);
+            }
 
             Toast.makeText(this, getResources().getString(R.string.contact_saved_success), Toast.LENGTH_SHORT).show();
             setResult(RESULT_OK);

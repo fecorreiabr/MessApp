@@ -1,9 +1,12 @@
 package br.iesb.messapp;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.res.ResourcesCompat;
@@ -11,12 +14,21 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.UUID;
 
@@ -34,9 +46,12 @@ public class RegisterActivity extends AppCompatActivity {
     private ImageView imageUser;
     private Drawable drawableCam;
     private String userId;
+    private PictureManager pictureManager;
 
     private Realm realm;
     private RealmConfiguration realmConfig;
+
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +71,8 @@ public class RegisterActivity extends AppCompatActivity {
         imageUser = (ImageView)findViewById(R.id.img_user_register);
         drawableCam = imageUser.getDrawable();
 
-        String userId = "";
+        firebaseAuth = FirebaseAuth.getInstance();
+        /*String userId = "";
         if (savedInstanceState != null) {
             userId = savedInstanceState.getString("userId");
         }
@@ -64,7 +80,7 @@ public class RegisterActivity extends AppCompatActivity {
             this.userId = UUID.randomUUID().toString();
         } else {
             this.userId = userId;
-        }
+        }*/
 
     }
 
@@ -89,8 +105,8 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     public void onClickImageUser (View view){
-        PictureManager pictureManager = new PictureManager();
-        pictureManager.loadPicture(getResources().getString(R.string.image_directory), userId, this, R.id.img_user_register);
+        pictureManager = new PictureManager();
+        pictureManager.loadPicture(this, R.id.img_user_register);
     }
 
     @Override
@@ -101,16 +117,15 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-
-    @Override
+    /*@Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putString("userId", userId);
-    }
+    }*/
 
     private void RegisterUser(){
-        String name = textName.getText().toString();
-        String email = textEmail.getText().toString();
-        String pwd = textPwd.getText().toString();
+        final String name = textName.getText().toString();
+        final String email = textEmail.getText().toString();
+        final String pwd = textPwd.getText().toString();
         StringBuilder errorMsg = new StringBuilder();
         if (TextUtils.isEmpty(name)){
             errorMsg.append(getResources().getString(R.string.name_incorrect_register));
@@ -126,43 +141,72 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         if (TextUtils.isEmpty(errorMsg.toString())) {
-            if (!isUserAlreadyRegistered(email)){
-                realm.beginTransaction();
-                User user = realm.createObject(User.class);
-                user.setId(this.userId);
-                user.setName(name);
-                user.setEmail(email);
-                user.setPwd(pwd);
-                realm.commitTransaction();
+            //if (!isUserAlreadyRegistered(email)){
+            Utility.showProgressDialog(
+                    this,
+                    getResources().getString(R.string.progress_register_title),
+                    getResources().getString(R.string.progress_register_desc)
+            );
+            firebaseAuth.createUserWithEmailAndPassword(email, pwd)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
 
-                realm.beginTransaction();
-                Contact contact = realm.createObject(Contact.class);
-                contact.setId(this.userId);
-                contact.setName(name);
-                contact.setEmail(email);
-                contact.setOwner(user.getId());
-                realm.commitTransaction();
+                            if (!task.isSuccessful()){
 
-                Toast.makeText(this, getResources().getString(R.string.user_registered_success), Toast.LENGTH_SHORT).show();
-                this.userId = null;
-                finish();
-                return;
-            }
+                                try{
+                                    throw  task.getException();
+                                } catch(FirebaseAuthUserCollisionException e){
+                                    Toast.makeText(RegisterActivity.this, getResources().getString(R.string.email_already_registerd), Toast.LENGTH_LONG).show();
+                                } catch(Exception e){
+                                    Log.e(RegisterActivity.this.getClass().getSimpleName(), e.getMessage());
+                                }
+
+                            } else {
+                                FirebaseUser firebaseUser = task.getResult().getUser();
+                                userId = firebaseUser.getUid();
+
+                                realm.beginTransaction();
+                                User user = realm.createObject(User.class);
+                                user.setId(userId);
+                                user.setName(name);
+                                user.setEmail(email);
+                                //user.setPwd(pwd);
+                                realm.commitTransaction();
+                                if (pictureManager != null) {
+                                    pictureManager.savePictureFile(getResources().getString(R.string.image_directory), userId);
+                                }
+
+                                realm.beginTransaction();
+                                Contact contact = realm.createObject(Contact.class);
+                                contact.setId(userId);
+                                contact.setName(name);
+                                contact.setEmail(email);
+                                contact.setOwner(userId);
+                                realm.commitTransaction();
+
+                                Utility.SaveLogin(RegisterActivity.this, userId);
+
+                                Toast.makeText(RegisterActivity.this, getResources().getString(R.string.user_registered_success), Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
+                            Utility.hideProgressDialog();
+                        }
+                    });
+
+            /*}
             else {
                 errorMsg.append(getResources().getString(R.string.email_already_registerd));
-            }
+            }*/
+        } else {
+            Toast.makeText(this, errorMsg.toString(), Toast.LENGTH_LONG).show();
         }
-
-        Toast.makeText(this, errorMsg.toString(), Toast.LENGTH_LONG).show();
-
     }
 
     private boolean isUserAlreadyRegistered(String email){
         RealmResults<User> results =  realm.where(User.class).equalTo("email", email).findAll();
         return !results.isEmpty();
     }
-
-
 
 
 }

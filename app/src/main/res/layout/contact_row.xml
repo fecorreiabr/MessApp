@@ -8,8 +8,9 @@
     android:background="?android:attr/selectableItemBackground">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/img_contact_row"
+        android:layout_width="@dimen/avatar_row_size"
+        android:layout_height="@dimen/avatar_row_size"
         android:layout_marginStart="@dimen/row_horizontal_margin"
         android:layout_marginTop="@dimen/contact_row_padding_top"
         android:src="@drawable/ic_account_circle_40dp" />

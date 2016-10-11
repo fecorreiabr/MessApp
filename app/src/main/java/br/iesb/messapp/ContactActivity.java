@@ -3,17 +3,22 @@ package br.iesb.messapp;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.UUID;
 
@@ -34,6 +39,8 @@ public class ContactActivity extends AppCompatActivity {
     private Realm realm;
     private RealmConfiguration realmConfig;
 
+    private DatabaseReference mDatabase;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +54,8 @@ public class ContactActivity extends AppCompatActivity {
         realm = Realm.getInstance(realmConfig);
 
         userId = getIntent().getStringExtra("userId");
+
+        mDatabase = FirebaseDatabase.getInstance().getReference(userId);
 
         textName = (EditText) findViewById(R.id.text_name_contact);
         textEmail = (EditText) findViewById(R.id.text_email_contact);
@@ -76,6 +85,9 @@ public class ContactActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_contact, menu);
+        if (contact == null){
+            menu.findItem(R.id.delete_contact).setVisible(false);
+        }
         return true;
     }
 
@@ -87,7 +99,9 @@ public class ContactActivity extends AppCompatActivity {
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.save_contact) {
-            SaveContact();
+            saveContact();
+        } else if (id == R.id.delete_contact){
+            deleteContact();
         }
 
         return super.onOptionsItemSelected(item);
@@ -123,7 +137,7 @@ public class ContactActivity extends AppCompatActivity {
         }
     }
 
-    public void SaveContact(){
+    public void saveContact(){
         String name = textName.getText().toString();
         String email = textEmail.getText().toString();
         String phone = textPhone.getText().toString();
@@ -150,7 +164,7 @@ public class ContactActivity extends AppCompatActivity {
             if (contact == null){
                 if (!isContactAlreadyRegistered(email)) {
                     contact = realm.createObject(Contact.class);
-                    contact.setId(UUID.randomUUID().toString());
+                    contact.setId(contactId);
                 } else {
                     realm.cancelTransaction();
                     Toast.makeText(this, getResources().getString(R.string.contact_already_registered), Toast.LENGTH_SHORT).show();
@@ -170,6 +184,21 @@ public class ContactActivity extends AppCompatActivity {
             contact.setSkypeId(skype);
             contact.setOwner(userId);
             realm.commitTransaction();
+            final Contact contactFirebase = realm.copyFromRealm(contact);
+
+            mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    mDatabase.child(contactId).setValue(contactFirebase);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    String TAG = ContactActivity.class.getSimpleName();
+                    Log.i(TAG, databaseError.getMessage());
+                    Log.i(TAG, databaseError.getDetails());
+                }
+            });
 
             if (pictureManager != null){
                 pictureManager.savePictureFile(getResources().getString(R.string.image_directory), contactId);
@@ -181,6 +210,27 @@ public class ContactActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, errorMsg.toString(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void deleteContact(){
+        realm.beginTransaction();
+        contact.deleteFromRealm();
+        realm.commitTransaction();
+        setResult(RESULT_OK);
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mDatabase.child(contactId).removeValue();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                String TAG = ContactActivity.class.getSimpleName();
+                Log.i(TAG, databaseError.getMessage());
+                Log.i(TAG, databaseError.getDetails());
+            }
+        });
+        finish();
     }
 
     private boolean isContactAlreadyRegistered(String email){

@@ -4,11 +4,14 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.widget.Toast;
@@ -60,8 +63,14 @@ public class Utility {
 
     public static void createAlarm(Context context){
         if (!isAlarmRunning()) {
+            SharedPreferences sharedPreferences = context.getSharedPreferences(
+                    context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+            String uId = sharedPreferences.getString("uid", "");
+
             int seconds = 60;
             Intent alarmIntent = new Intent(context, AlarmReceiver.class);
+            if (!uId.equals(""))
+                alarmIntent.putExtra("uid", uId);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 1, alarmIntent, 0);
 
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -88,7 +97,7 @@ public class Utility {
         }
     }
 
-    public static void SaveLogin(Context context, String userId){
+    public static void saveLogin(Context context, String userId){
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -97,11 +106,26 @@ public class Utility {
         editor.commit();
     }
 
-    public static void SaveLogout(Context context){
+    public static void saveLogout(Context context){
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(context.getString(R.string.preference_user_logged), false);
         editor.commit();
     }
+
+    public static void alertMsg(Context context, String title, String msg){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(msg);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
 }

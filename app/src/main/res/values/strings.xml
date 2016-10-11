@@ -49,6 +49,10 @@
     <string name="preference_uid">uid</string>
     <string name="preference_user_logged">user_logged</string>
     <string name="action_logout">Logout</string>
+    <string name="msg_permission_location">Para usar o mapa é necessária a permissão à localização.</string>
+    <string name="msg_permission_location_update">Sem autorização para acesso à localização sua posição não será atualizada no servidor.</string>
+    <string name="action_delete">Remover</string>
+    <string name="contact_list_updated">Lista de contatos atualizada</string>
 
     <string-array name="photo_options">
         <item>Tirar foto</item>
@@ -57,4 +61,5 @@
     </string-array>
     <string name="title_activity_bluetooth">Dispositivos</string>
     <string name="title_activity_maps">Mapa</string>
+
 </resources>

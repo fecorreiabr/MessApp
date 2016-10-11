@@ -1,12 +1,12 @@
 package br.iesb.messapp;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,15 +17,20 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -63,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private RealmConfiguration realmConfig;
 
     private FirebaseAuth firebaseAuth;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +78,14 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        firebaseAuth = FirebaseAuth.getInstance();
-
         userId = getIntent().getStringExtra("id");
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference(userId);
+
         realmConfig = new RealmConfiguration.Builder(this).build();
         realm = Realm.getInstance(realmConfig);
-        LoadContactList();
+        loadContactList();
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -90,18 +98,28 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        Utility.createAlarm(this);
+        loadContactListFromFirebase();
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MapsActivity.MAP_REQUEST_FINE_LOCATION_PERMISSION);
+        } else {
+            Utility.createAlarm(this);
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (resultCode) {
             case RESULT_OK:
-                LoadContactList();
-                PlaceholderFragment contactsFragment =
-                        (PlaceholderFragment) mSectionsPagerAdapter.getFragment(CONTACTS_PAGE_POSITION);
-                contactsFragment.mainAdapter.notifyDataSetChanged();
+                loadContactList();
+                updateContactsRecyclerView();
                 break;
         }
     }
@@ -122,9 +140,10 @@ public class MainActivity extends AppCompatActivity {
         Intent intent;
 
         //noinspection SimplifiableIfStatement
-        switch (id){
+        switch (id) {
             case R.id.action_logout:
-                Utility.SaveLogout(this);
+                Utility.saveLogout(this);
+                firebaseAuth.signOut();
                 intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
                 finish();
@@ -144,15 +163,101 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void LoadContactList() {
+    private void loadContactList() {
         RealmResults<Contact> results = realm.where(Contact.class).equalTo("owner", userId).findAll();
         contactList = results;
+    }
+
+    private void updateContactsRecyclerView(){
+        PlaceholderFragment contactsFragment =
+                (PlaceholderFragment) mSectionsPagerAdapter.getFragment(CONTACTS_PAGE_POSITION);
+        contactsFragment.mainAdapter.notifyDataSetChanged();
+    }
+
+    private void loadContactListFromFirebase() {
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(final DataSnapshot dataSnapshot) {
+
+                realm.executeTransactionAsync(new Realm.Transaction() {
+                      @Override
+                      public void execute(Realm realm) {
+                          Iterable<DataSnapshot> dataSnapshots = dataSnapshot.getChildren();
+
+                          for (DataSnapshot data : dataSnapshots) {
+                              String key = data.getKey();
+                              if (!key.equals("email") && !key.equals("name")) {
+                                  Contact contact = data.getValue(Contact.class);
+                                  contact.setId(key);
+                                  contact.setOwner(userId);
+                                  realm.copyToRealmOrUpdate(contact);
+                              }
+                          }
+
+                      }
+                  }, new Realm.Transaction.OnSuccess() {
+                      @Override
+                      public void onSuccess() {
+                          Log.i(MainActivity.class.getSimpleName(), "Lista de contatos atualizada.");
+                          loadContactList();
+                          updateContactsRecyclerView();
+                          Toast.makeText(MainActivity.this, getString(R.string.contact_list_updated), Toast.LENGTH_SHORT).show();
+                      }
+                  }, new Realm.Transaction.OnError() {
+                      @Override
+                      public void onError(Throwable error) {
+                          String TAG = MainActivity.class.getSimpleName();
+                          Log.e(TAG, "Erro ao carregar contatos do Firebase.");
+                          error.printStackTrace();
+                      }
+                  }
+                );
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                String TAG = MainActivity.class.getSimpleName();
+                Log.i(TAG, databaseError.getMessage());
+                Log.i(TAG, databaseError.getDetails());
+            }
+        });
     }
 
     public void onClickNewContact(View view) {
         Intent intent = new Intent(this, ContactActivity.class);
         intent.putExtra("userId", userId);
         startActivityForResult(intent, REQUEST_NEW_CONTACT);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MapsActivity.MAP_REQUEST_FINE_LOCATION_PERMISSION:
+                boolean permissionsGranted = true;
+                if (grantResults.length > 0) {
+                    for (int grantResult : grantResults) {
+                        if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                            permissionsGranted = false;
+                            break;
+                        }
+                    }
+                } else {
+                    permissionsGranted = false;
+                }
+
+                if (permissionsGranted) {
+                    Utility.createAlarm(this);
+                } else {
+                    Utility.alertMsg(
+                            this,
+                            getString(R.string.title_permission_necessary),
+                            getString(R.string.msg_permission_location_update)
+                    );
+                    finish();
+                }
+
+                break;
+        }
     }
 
 
@@ -170,6 +275,8 @@ public class MainActivity extends AppCompatActivity {
         private RecyclerView.Adapter mainAdapter;
         private RecyclerView.LayoutManager mainLayoutManager;
 
+        private Context context;
+
         public PlaceholderFragment() {
         }
 
@@ -177,11 +284,12 @@ public class MainActivity extends AppCompatActivity {
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
+        public static PlaceholderFragment newInstance(Context context, int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
+            fragment.context = context;
             return fragment;
         }
 
@@ -199,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
                 //mainRecyclerView.setLongClickable(true);
                 mainLayoutManager = new LinearLayoutManager(getActivity());
                 mainRecyclerView.setLayoutManager(mainLayoutManager);
-                mainAdapter = new ContactsAdapter(contactList) {
+                mainAdapter = new ContactsAdapter(context, contactList) {
                     @Override
                     public void onItemLongClickListener(int position) {
                         editContact(position);
@@ -244,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            fragments[position] = PlaceholderFragment.newInstance(position + 1);
+            fragments[position] = PlaceholderFragment.newInstance(MainActivity.this, position + 1);
             return fragments[position];
             //return PlaceholderFragment.newInstance(position + 1);
         }

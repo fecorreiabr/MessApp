@@ -219,17 +219,10 @@ public class PictureManager extends Fragment {
                         galleryIntent();
                     }
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle(getString(R.string.title_permission_necessary));
-                    builder.setMessage(getString(R.string.msg_permission_external_storage_camera));
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                        }
-                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
+                    Utility.alertMsg(
+                            getContext(),
+                            getString(R.string.title_permission_necessary),
+                            getString(R.string.msg_permission_external_storage_camera));
                 }
                 break;
         }

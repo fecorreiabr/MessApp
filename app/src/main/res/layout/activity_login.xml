@@ -134,7 +134,16 @@
         </RelativeLayout>
     </LinearLayout>
 
-    <Button
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/login_facebook"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/fb_button_height"
+        android:layout_below="@id/login_area"
+        android:layout_alignStart="@id/login_area"
+        android:layout_alignEnd="@id/login_area"
+        android:layout_marginTop="@dimen/activity_vertical_margin" />
+
+    <!--<Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/login_area"
@@ -144,6 +153,6 @@
         android:background="@color/colorFB"
         android:textColor="@color/colorBackground"
         android:text="@string/fb_login"
-        />
+        />-->
 
 </RelativeLayout>

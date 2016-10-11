@@ -1,6 +1,7 @@
 package br.iesb.messapp;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -14,6 +15,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -31,7 +33,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private static final int MAP_REQUEST_FINE_LOCATION_PERMISSION = 9001;
+    public static final int MAP_REQUEST_FINE_LOCATION_PERMISSION = 9001;
     private GoogleMap googleMap;
     private LocationManager locationManager;
     private int mapZoom;
@@ -146,7 +148,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     getLastLocation();
                     getLocation();
                 } else {
-                    //TODO permissão negada
+                    Utility.alertMsg(
+                            this,
+                            getString(R.string.title_permission_necessary),
+                            getString(R.string.msg_permission_location)
+                    );
+                    finish();
                 }
 
                 break;

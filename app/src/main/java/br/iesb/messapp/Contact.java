@@ -1,5 +1,8 @@
 package br.iesb.messapp;
 
+import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
+
 import java.util.UUID;
 
 import io.realm.RealmObject;
@@ -8,6 +11,7 @@ import io.realm.annotations.PrimaryKey;
 /**
  * Created by Felipe on 07/09/2016.
  */
+@IgnoreExtraProperties
 public class Contact extends RealmObject {
     @PrimaryKey
     private String id;
@@ -16,9 +20,9 @@ public class Contact extends RealmObject {
     private String phone;
     private String address;
     private String skypeId;
-    private String avatarPicture;
     private String owner;
 
+    @Exclude
     public String getId() {
         return id;
     }
@@ -67,20 +71,10 @@ public class Contact extends RealmObject {
         this.skypeId = skypeId;
     }
 
-    public String getAvatarPicture() {
-        return avatarPicture;
-    }
-
-    public void setAvatarPicture(String avatarPicture) {
-        this.avatarPicture = avatarPicture;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
     public void setOwner(String owner) {
         this.owner = owner;
     }
 
+    public Contact() {
+    }
 }

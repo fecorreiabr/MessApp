@@ -35,6 +35,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.List;
 
 import br.iesb.messapp.adapters.ContactsAdapter;
+import br.iesb.messapp.services.RetrievePositionsService;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static String userId;
     protected static List<Contact> contactList;
+    protected static Context activityContext;
     private Realm realm;
     private RealmConfiguration realmConfig;
 
@@ -75,10 +77,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        activityContext = this;
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        userId = getIntent().getStringExtra("id");
+        String intentUserId = getIntent().getStringExtra("id");
+        if (intentUserId != null) {
+            userId = intentUserId;
+        }
 
         firebaseAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference(userId);
@@ -105,12 +112,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     MapsActivity.MAP_REQUEST_FINE_LOCATION_PERMISSION);
         } else {
             Utility.createAlarm(this);
+            startLocationsRetrieveService();
         }
     }
 
@@ -171,7 +180,15 @@ public class MainActivity extends AppCompatActivity {
     private void updateContactsRecyclerView(){
         PlaceholderFragment contactsFragment =
                 (PlaceholderFragment) mSectionsPagerAdapter.getFragment(CONTACTS_PAGE_POSITION);
-        contactsFragment.mainAdapter.notifyDataSetChanged();
+        if (contactsFragment != null) {
+            contactsFragment.mainAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void startLocationsRetrieveService(){
+        Intent mServiceIntent = new Intent(this, RetrievePositionsService.class);
+        mServiceIntent.putExtra("uid", userId);
+        this.startService(mServiceIntent);
     }
 
     private void loadContactListFromFirebase() {
@@ -297,6 +314,9 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             int sectionNumber = getArguments().getInt(ARG_SECTION_NUMBER);
+            if (context == null){
+                context = activityContext;
+            }
             View rootView;
 
             if (sectionNumber == 1) {
@@ -325,6 +345,13 @@ public class MainActivity extends AppCompatActivity {
             //textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }
+
+        /*@Override
+        public void onSaveInstanceState(Bundle outState) {
+            outState.putBundle("args", getArguments());
+            outState.putString("context", context.get);
+            super.onSaveInstanceState(outState);
+        }*/
 
         private void editContact(int position) {
             String contactId = contactList.get(position).getId();

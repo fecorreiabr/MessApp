@@ -1,11 +1,16 @@
 package br.iesb.messapp.model;
 
+import android.os.Parcelable;
+
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.Exclude;
+
+import java.io.Serializable;
 
 /**
  * Created by Felipe on 10/10/2016.
  */
-public class Location {
+public class Location implements Serializable {
     private String id;
     private double lat, lng;
 
@@ -32,6 +37,11 @@ public class Location {
 
     public void setLng(double lng) {
         this.lng = lng;
+    }
+
+    @Exclude
+    public LatLng getLatLng(){
+        return new LatLng(lat, lng);
     }
 
     public Location() {

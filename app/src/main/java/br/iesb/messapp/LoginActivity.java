@@ -22,6 +22,12 @@ import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -29,20 +35,17 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
 
 public class LoginActivity extends AppCompatActivity {
+
+    private static final int REQUEST_GOOGLE_LOGIN = 931;
 
     private Realm realm;
     private RealmConfiguration realmConfig;
@@ -55,6 +58,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+
+    GoogleApiClient googleApiClient;
 
     private CallbackManager callbackManager;
 
@@ -72,6 +77,7 @@ public class LoginActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         setFacebookLogin();
+        setGoogleLogin();
         //setmAuthListener();
     }
 
@@ -85,6 +91,9 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         } else {
             LoginManager.getInstance().logOut();
+            if (googleApiClient.isConnected()){
+                Auth.GoogleSignInApi.signOut(googleApiClient);
+            }
         }
         //firebaseAuth.addAuthStateListener(mAuthListener);
     }
@@ -101,7 +110,24 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_GOOGLE_LOGIN){
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result.isSuccess()){
+                Utility.showProgressDialog(
+                        LoginActivity.this,
+                        getString(R.string.progress_login_title),
+                        getString(R.string.progress_login_desc));
+                GoogleSignInAccount account = result.getSignInAccount();
+                firebaseAuthWithGoogle(account);
+            } else {
+                Log.w("GOOGLE", "Google login error: " + result.getStatus().getStatusMessage());
+                Toast.makeText(LoginActivity.this, "Falha de autenticação.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
+
 
     /*private void setmAuthListener(){
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -141,14 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                             if (user != null){
                                 String userId = user.getUid();
                                 facebookUser.setId(userId);
-                                saveFacebookUser();
-                                createContactFromUser(facebookUser);
-                                Utility.saveLogin(LoginActivity.this, userId);
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                intent.putExtra("id", userId);
-                                Utility.hideProgressDialog();
-                                startActivity(intent);
-                                finish();
+                                loginFromProvider(facebookUser);
                             }
                         }
 
@@ -227,13 +246,81 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void saveFacebookUser(){
+    private void saveProviderUser(final User user){
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                realm.copyToRealmOrUpdate(facebookUser);
+                realm.copyToRealmOrUpdate(user);
             }
         });
+    }
+
+    private void setGoogleLogin(){
+        findViewById(R.id.login_google).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickGoogleLogin(view);
+            }
+        });
+        GoogleSignInOptions googleSignInOptions =
+                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_google_web_client_id))
+                .requestEmail().requestProfile()
+                .build();
+
+        GoogleApiClient.OnConnectionFailedListener onConnectionFailedListener = new GoogleApiClient.OnConnectionFailedListener() {
+            @Override
+            public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                Log.e("GOOGLE", connectionResult.getErrorMessage());
+                Toast.makeText(LoginActivity.this, getString(R.string.connection_failed), Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, onConnectionFailedListener)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
+                .build();
+    }
+
+    public void onClickGoogleLogin(View view){
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+        startActivityForResult(signInIntent, REQUEST_GOOGLE_LOGIN);
+    }
+
+    private void firebaseAuthWithGoogle(final GoogleSignInAccount account){
+        final String TAG = "FIREBASE";
+        Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
+
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Boolean taskSuccess = task.isSuccessful();
+                        Log.d(TAG, "firebaseAuthWithGoogle: onComplete: " + taskSuccess);
+
+                        if (!taskSuccess) {
+                            Utility.hideProgressDialog();
+                            Log.w(TAG, "signInWithCredential", task.getException());
+                            Toast.makeText(LoginActivity.this, "Falha de autenticação.",
+                                    Toast.LENGTH_SHORT).show();
+                            if (googleApiClient.isConnected()){
+                                Auth.GoogleSignInApi.signOut(googleApiClient);
+                            }
+                        } else {
+                            FirebaseUser user = task.getResult().getUser();
+                            if (user != null){
+                                User googleUser = new User();
+                                String userId = user.getUid();
+                                googleUser.setId(userId);
+                                googleUser.setName(account.getDisplayName());
+                                googleUser.setEmail(user.getEmail());
+                                googleUser.setPwd(account.getIdToken());
+                                loginFromProvider(googleUser);
+                            }
+                        }
+                    }
+                });
     }
 
     private void createContactFromUser(User user){
@@ -247,6 +334,18 @@ public class LoginActivity extends AppCompatActivity {
             contact.setOwner(user.getId());
             realm.commitTransaction();
         }
+    }
+
+    private void loginFromProvider(User user){
+        userId = user.getId();
+        saveProviderUser(user);
+        createContactFromUser(user);
+        Utility.saveLogin(LoginActivity.this, userId);
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.putExtra("id", userId);
+        Utility.hideProgressDialog();
+        startActivity(intent);
+        finish();
     }
 
     public void onClickRegister (View view){
@@ -295,14 +394,14 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private User Login (String email, String pwd){
+    /*private User Login (String email, String pwd){
         RealmResults<User> results = realm.where(User.class).equalTo("email", email).equalTo("pwd", pwd).findAll();
         if (!results.isEmpty()){
             return results.first();
         } else {
             return null;
         }
-    }
+    }*/
 
     private Boolean isUserLogged(){
         SharedPreferences sharedPreferences = this.getSharedPreferences(

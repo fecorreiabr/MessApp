@@ -1,7 +1,11 @@
 package br.iesb.messapp;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -18,6 +22,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -31,13 +36,33 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     public static final int MAP_REQUEST_FINE_LOCATION_PERMISSION = 9001;
+    public static final String MAP_UPDATE = "br.iesb.messapp.MAP_UPDATE";
     private GoogleMap googleMap;
     private LocationManager locationManager;
     private int mapZoom;
     private Marker marker;
+    private List<Marker> usersMarkers;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (MAP_UPDATE.equals(action)){
+                //List<Location> usersLocations = intent.getParcelableArrayListExtra("locations");
+                List<br.iesb.messapp.model.Location> usersLocations = (ArrayList)intent.getSerializableExtra("locations");
+                cleanUsersMarkers();
+                usersMarkers = createMarker(usersLocations);
+                Log.i(getClass().getSimpleName(), "Usuários adicionados no mapa.");
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +95,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        createReceiver();
+    }
+
+    @Override
+    protected void onStop() {
+        unregisterReceiver(receiver);
+        super.onStop();
+    }
+
     private void getLastLocation(){
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED){
@@ -91,6 +128,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return this.googleMap.addMarker(new MarkerOptions().position(latLng)
                 .title(getResources().getString(R.string.my_last_location))
                 .icon(markerIcon));
+    }
+
+    private List<Marker> createMarker(List<br.iesb.messapp.model.Location> locationList){
+        List<Marker> markerList = new ArrayList<>();
+        for (br.iesb.messapp.model.Location location: locationList) {
+            markerList.add(this.googleMap.addMarker(new MarkerOptions().position(location.getLatLng())));
+        }
+        return markerList;
+    }
+
+    private void cleanUsersMarkers(){
+        if (usersMarkers != null) {
+            for (Marker marker : usersMarkers) {
+                marker.remove();
+            }
+        }
+    }
+
+    private void createReceiver(){
+        IntentFilter filter = new IntentFilter(MAP_UPDATE);
+        registerReceiver(receiver, filter);
     }
 
     private void getLocation(){
